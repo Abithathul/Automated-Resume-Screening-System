@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TalentStream | Modern Results</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --accent: #6366f1;
+    --text-dark: #f1f5f9;
+    --border: rgba(255,255,255,0.15);
+}
+
+/* RESET */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* 🌌 NEW BACKGROUND */
+body {
+    font-family: 'fantasy;', serif;
+    color: var(--text-dark);
+    padding: 40px 15px;
+    background: linear-gradient(135deg, #020617, #0f172a, #1e1b4b);
+    min-height: 100vh;
+}
+
+/* CONTAINER */
+.container {
+    max-width: 1100px;
+    margin: auto;
+}
+
+/* HEADER */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+h2 {
+    font-size: 26px;
+}
+
+/* CONTROLS */
+.controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+input, select {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.1);
+    color: white;
+}
+
+/* BUTTON */
+.btn {
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: var(--accent);
+    color: white;
+}
+
+/* 🔴 CLEAR BUTTON */
+.btn-danger {
+    background: #ef4444;
+    color: white;
+}
+.btn-danger:hover {
+    background: #dc2626;
+}
+
+/* TABLE */
+.table-wrap {
+    border-radius: 16px;
+    background: #020617;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 14px;
+}
+
+th {
+    color: #94a3b8;
+}
+
+tr:hover {
+    background: rgba(99,102,241,0.2);
+}
+
+/* STATUS */
+.status {
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+}
+
+.status.selected { color: #34d399; }
+.status.shortlisted { color: #818cf8; }
+.status.rejected { color: #f87171; }
+
+/* ROLE */
+.role {
+    display: block;
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+/* DELETE */
+.del-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #cbd5f5;
+    border-radius: 6px;
+    padding: 4px 10px;
+    cursor: pointer;
+}
+.status-filter {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #020617;
+    color: white;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <header>
+        <h2>Candidates</h2>
+        <button class="btn btn-danger" onclick="clearAll()">Clear Data</button>
+    </header>
+
+    <div class="controls">
+        <!-- 🔍 NAME FILTER -->
+        <input type="text" id="search" placeholder="Filter by name...">
+
+        <!-- 🔢 SCORE FILTER -->
+        <input type="number" id="scoreFilter" placeholder="Min score (e.g. 70)">
+
+                <select id="filter" class="status-filter">
+            <option value="">All Status</option>
+            <option value="Selected">🟢 Selected</option>
+            <option value="Shortlisted">🔵 Shortlisted</option>
+            <option value="Rejected">🔴 Rejected</option>
+        </select>
+
+
+        <button class="btn btn-primary" onclick="sortData()">Sort by Score</button>
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Candidate</th>
+                    <th>Match</th>
+                    <th>Score</th>
+                    <th>Status</th>
+                    <th>Resume</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="resumeTable"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+let allData = [];
+
+/* FETCH */
+fetch("/get_candidates")
+.then(res=>res.json())
+.then(data=>{
+    allData = data;
+    renderTable(data);
+});
+
+/* RENDER */
+function renderTable(data){
+    let table = document.getElementById("resumeTable");
+    table.innerHTML = "";
+
+    data.forEach(d=>{
+        let row = `
+        <tr>
+            <td>
+                <b>${d.candidate_name}</b>
+                <span class="role">${d.role || "No Role"}</span>
+            </td>
+            <td>${d.match_percentage}%</td>
+            <td>${d.final_score}%</td>
+            <td><span class="status ${d.status.toLowerCase()}">${d.status}</span></td>
+            <td><a href="${d.file_url}" target="_blank">View</a></td>
+            <td><button class="del-btn" onclick="deleteCandidate(${d.id})">×</button></td>
+        </tr>`;
+        table.insertAdjacentHTML("beforeend", row);
+    });
+}
+
+/* DELETE */
+function deleteCandidate(id){
+    fetch(`/delete_candidate/${id}`, { method: "DELETE" })
+    .then(()=>{
+        allData = allData.filter(c => c.id !== id);
+        applyFilters();
+    });
+}
+
+/* CLEAR */
+function clearAll(){
+    if(confirm("Delete all candidates?")){
+        fetch("/clear_candidates", { method: "POST" })
+        .then(()=>{
+            allData = [];
+            renderTable([]);
+        });
+    }
+}
+
+/* 🔍 FILTER FUNCTION */
+function applyFilters(){
+    let name = document.getElementById("search").value.toLowerCase();
+    let score = document.getElementById("scoreFilter").value;
+    let status = document.getElementById("filter").value;
+
+    let filtered = allData.filter(d=>{
+        return (
+            d.candidate_name.toLowerCase().includes(name) &&
+            (!score || d.final_score >= score) &&
+            (!status || d.status === status)
+        );
+    });
+
+    renderTable(filtered);
+}
+
+/* EVENTS */
+document.getElementById("search").addEventListener("input", applyFilters);
+document.getElementById("scoreFilter").addEventListener("input", applyFilters);
+document.getElementById("filter").addEventListener("change", applyFilters);
+
+/* SORT */
+function sortData(){
+    let sorted = [...allData].sort((a,b)=> b.final_score - a.final_score);
+    renderTable(sorted);
+}
+</script>
+
+</body>
+</html>

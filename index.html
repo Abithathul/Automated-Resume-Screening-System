@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Resume Screening</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif}
+
+body{background:#f4f6f9;display:flex;min-height:100vh}
+
+/* SIDEBAR */
+.sidebar{
+width:230px;background:#111827;color:#fff;
+padding:30px 20px;position:fixed;height:100%
+}
+.sidebar h2{text-align:center;margin-bottom:40px}
+.sidebar ul{list-style:none}
+.sidebar ul li{
+padding:12px;margin-bottom:12px;border-radius:8px;
+cursor:pointer;display:flex;gap:10px
+}
+.sidebar ul li:hover{background:#1f2937}
+.sidebar a{color:white;text-decoration:none;display:flex;gap:10px}
+
+/* MAIN */
+.main{margin-left:230px;padding:40px;width:100%}
+
+/* CARDS */
+.cards{
+display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+gap:20px;margin-bottom:40px
+}
+
+.card{
+background:#fff;padding:20px;border-radius:15px;
+box-shadow:0 5px 15px rgba(0,0,0,0.05)
+}
+
+.card h3{font-size:14px;color:#6b7280}
+.card p{font-size:24px;font-weight:700;margin-top:10px}
+
+.green-card{border-left:6px solid #16a34a}
+.red-card{border-left:6px solid #dc2626}
+.blue-card{border-left:6px solid #2563eb}
+.orange-card{border-left:6px solid #f59e0b}
+
+/* UPLOAD */
+.upload{
+background:#fff;padding:30px;border-radius:15px;margin-bottom:40px
+}
+
+select, textarea{
+width:100%;padding:12px;border-radius:8px;
+border:1px solid #ccc;margin-top:8px
+}
+
+button{
+padding:8px 10px;
+background:linear-gradient(135deg,#2563eb,#1d4ed8);
+border:none;color:#fff;border-radius:10px;
+margin-top:15px;cursor:pointer;font-size:12px;
+display:inline-flex;gap:6px;
+}
+button:hover{transform:translateY(-2px)}
+
+/* TABLE */
+.table-section{
+background:#fff;padding:30px;border-radius:15px;margin-bottom:40px
+}
+
+table{width:100%;border-collapse:collapse}
+th,td{padding:15px;border-bottom:1px solid #eee}
+
+.status{
+padding:6px 14px;border-radius:20px;font-size:12px;
+font-weight:600;color:#fff
+}
+
+.selected{background:#16a34a}
+.rejected{background:#dc2626}
+.shortlisted{background:#2563eb}
+
+/* CHAT BUTTON */
+/* Floating Button */
+.chat-toggle {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  width: 65px;
+  height: 65px;
+  background: linear-gradient(135deg, #6c63ff, #00c9a7);
+  color: #fff;
+  font-size: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+  transition: 0.3s;
+}
+
+.chat-toggle:hover {
+  transform: scale(1.1);
+}
+
+/* Chat Container */
+.chatbot {
+  position: fixed;
+  bottom: 100px;
+  right: 25px;
+  width: 360px;
+  height: 420px;
+  background: #ffffff;
+  border-radius: 15px;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Header */
+.chat-header {
+  background: linear-gradient(135deg, #6c63ff, #00c9a7);
+  color: #fff;
+  padding: 15px;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Chat Area */
+.chatbox {
+  flex: 1;
+  padding: 15px;
+  overflow-y: auto;
+  background: #f4f6fb;
+}
+
+/* Messages */
+.msg {
+  display: flex;
+  margin-bottom: 12px;
+}
+
+.msg.user {
+  justify-content: flex-end;
+}
+
+.msg.bot {
+  justify-content: flex-start;
+}
+
+/* Message Bubble */
+.bubble {
+  max-width: 75%;
+  padding: 10px 14px;
+  border-radius: 18px;
+  font-size: 14px;
+  line-height: 1.4;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+/* User Message */
+.user .bubble {
+  background: #6c63ff;
+  color: white;
+  border-bottom-right-radius: 5px;
+}
+
+/* Bot Message */
+.bot .bubble {
+  background: #ffffff;
+  border: 1px solid #ddd;
+  border-bottom-left-radius: 5px;
+}
+
+/* Input Area */
+.chat-input {
+  display: flex;
+  padding: 10px;
+  border-top: 1px solid #eee;
+  background: #fff;
+}
+
+.chat-input input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  outline: none;
+}
+
+.chat-input input:focus {
+  border-color: #6c63ff;
+}
+
+/* Send Button */
+.chat-input button {
+  margin-left: 8px;
+  padding: 10px 15px;
+  background: #6c63ff;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.chat-input button:hover {
+  background: #574bdb;
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* Chat Input Layout */
+.chat-input {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-top: 1px solid #eee;
+  background: #fff;
+}
+
+/* Input Box */
+.chat-input input {
+  flex: 1;
+  padding: 10px 15px;
+  margin: 0 8px;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  outline: none;
+}
+
+/* Mic Button */
+.voice-btn {
+  background: #1cc88a;
+  color: white;
+  border: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.voice-btn:hover {
+  background: #17a673;
+}
+
+/* Send Button */
+.send-btn {
+  background: #4e73df;
+  color: white;
+  border: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.send-btn:hover {
+  background: #2e59d9;
+}
+
+/* Typing Indicator */
+.typing-indicator {
+  display: none;
+  font-size: 13px;
+  color: #888;
+  padding: 5px 15px;
+}
+</style>
+</head>
+
+
+<body>
+
+<div class="sidebar">
+<h2>Resume AI</h2>
+<ul>
+<li><a href="/index"><i class="fa fa-home"></i> Dashboard</a></li>
+<li><a href="/resumes"><i class="fa fa-file"></i> Resumes</a></li>
+<li><i class="fa fa-chart-bar"></i> Job </li>
+<li><i class="fa fa-cog"></i> Settings</li>
+</ul>
+</div>
+
+<div class="main">
+
+<h1>AI Resume Screening</h1>
+
+<div class="cards">
+<div class="card"><h3>Total</h3><p id="total">0</p></div>
+<div class="card green-card"><h3>Selected</h3><p id="selected">0</p></div>
+<div class="card red-card"><h3>Rejected</h3><p id="rejected">0</p></div>
+<div class="card blue-card"><h3>Shortlisted</h3><p id="shortlisted">0</p></div>
+</div>
+
+<!-- UPLOAD -->
+<div class="upload">
+<h3>Upload Resume</h3>
+
+<label>Select Job Role:</label>
+<select id="jobRole" onchange="fillJobDescription()">
+<option value="">-- Select Role --</option>
+<option value="Ios developer">IOS Developer</option>
+<option value="Full stack developer">Full Stack Developer</option>
+<option value="Java developer">Java Developer</option>
+<option value="Network administrator">Network Administrator</option>
+<option value="Software engineer">Software Engineer</option>
+<option value="Digital marketing">Digital marketing</option>
+<option value="Data scientist">Data scientist</option>
+</select>
+
+<label>Job Description:</label>
+<textarea id="jobDescription" rows="6"></textarea>
+
+<input type="file" id="resumeUpload" multiple>
+
+<button onclick="uploadResume()">Upload & Analyze</button>
+<button onclick="clearForm()">Clear</button>
+</div>
+
+<!-- TABLE -->
+<div class="table-section">
+<h3>Resume Results</h3>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Role</th>
+<th>Match %</th>
+<th>Final Score</th>
+<th>Status</th>
+<th>View</th>
+</tr>
+</thead>
+
+<tbody id="resumeTableBody"></tbody> ✅
+</table>
+
+<button id="resetBtn" onclick="resetForm()" style="display:none;">
+    Reset
+</button>
+</div>
+
+</div>
+
+<!-- CHATBOT TOGGLE BUTTON -->
+<div class="chat-toggle" onclick="toggleChat()">
+  <i class="fa fa-comments"></i>
+</div>
+
+<!-- CHATBOT PANEL -->
+<div class="chatbot" id="chatbot" style="display:none;flex-direction:column;position:fixed;bottom:90px;right:20px;width:350px;height:300px;background:white;border-radius:12px;overflow:hidden;box-shadow:0 5px 20px rgba(0,0,0,0.2);">
+  
+  <div class="chat-header" style="background:#4e73df;color:white;padding:14px;display:flex;justify-content:space-between;">
+    <span>Resume AI Assistant</span>
+    <span style="cursor:pointer" onclick="toggleChat()">&times;</span>
+  </div>
+
+  <!-- Chat Messages -->
+  <div id="chatbox" class="chatbox"></div>
+
+  <!-- Typing Indicator -->
+  <div id="typingIndicator" class="typing-indicator">
+    <i class="fas fa-robot"></i> AI is typing...
+  </div>
+
+  <!-- Input Area -->
+  <div class="chat-input">
+
+    <!-- Mic -->
+    <button class="voice-btn" id="voiceBtn">
+      <i class="fas fa-microphone"></i>
+    </button>
+
+    <!-- Input -->
+    <input type="text" id="chatInput" placeholder="Type a message..." />
+
+    <!-- Send -->
+    <button class="send-btn" onclick="sendMessage()">
+      <i class="fas fa-paper-plane"></i>
+    </button>
+
+  </div>
+
+</div>
+<script>
+let total=0, selected=0, rejected=0, shortlisted=0;
+let isReset = false;
+
+const typingIndicator = document.getElementById("typingIndicator");
+
+function showTyping() {
+    document.getElementById("typingIndicator").style.display = "block";
+}
+
+function hideTyping() {
+    document.getElementById("typingIndicator").style.display = "none";
+}
+
+/* JOB DESCRIPTIONS */
+const jobData = {
+
+"Ios developer": `Job Title: iOS Developer
+
+Job Summary:
+We are seeking a skilled iOS Developer to design and develop high-quality mobile applications.
+
+Key Responsibilities:
+- Develop iOS apps using Swift and Objective-C
+- Integrate REST APIs
+- Ensure performance and responsiveness
+
+Required Skills:
+- Swift, Objective-C, Xcode, UIKit, Core Data
+- REST API integration
+
+Experience: 0-2 years
+Education: Bachelor’s in CS`,
+
+"Full stack developer": `Job Title: Full Stack Developer
+
+Job Summary:
+Looking for a developer to build scalable web applications.
+
+Key Responsibilities:
+- Develop frontend and backend systems
+- Build REST APIs
+- Work with databases
+
+Required Skills:
+- React, Node.js, MongoDB, SQL
+- REST API
+
+Experience: 0-2 years
+Education: Bachelor’s in CS`,
+
+"Java developer": `Job Title: Java Developer
+
+Job Summary:
+Build backend systems using Java technologies.
+
+Key Responsibilities:
+- Develop APIs using Spring Boot
+- Work on backend systems
+
+Required Skills:
+- Java, Spring Boot, Hibernate
+- REST API
+
+Experience: 0-2 years
+Education: Bachelor’s in CS`,
+
+"Network administrator": `Job Title: Network Administrator
+
+Job Summary:
+Manage and maintain network infrastructure.
+
+Key Responsibilities:
+- Configure routers and switches
+- Monitor network
+
+Required Skills:
+- Networking, DNS, Firewall
+
+Experience: 0-2 years
+Education: IT related degree`,
+
+"Software engineer": `Job Title: Software Engineer
+
+Job Summary:
+Develop scalable backend systems.
+
+Key Responsibilities:
+- Build APIs and backend services
+
+Required Skills:
+- Backend, API, Database, Cloud
+
+Experience: 0-2 years
+Education: CS degree`,
+
+"Digital marketing": `Job Title: Digital Marketing Specialist
+
+Job Summary:
+Execute digital campaigns and strategies.
+
+Key Responsibilities:
+- SEO, SEM, Social media campaigns
+
+Required Skills:
+- Google Ads, Analytics, Meta Ads
+
+Experience: 0-1 year
+Education: Marketing/Business`,
+
+"Data scientist": `Job Title: Data Scientist
+
+Job Summary:
+Analyze data and build ML models.
+
+Key Responsibilities:
+- Data analysis and ML model building
+
+Required Skills:
+- Python, Pandas, NumPy, ML, SQL
+
+Experience: 0-2 years
+Education: CS/Statistics`
+};
+
+function fillJobDescription(){
+    let role=document.getElementById("jobRole").value;
+    document.getElementById("jobDescription").value=jobData[role]||"";
+}
+
+/* UPLOAD */
+async function uploadResume() {
+
+    let files = document.getElementById("resumeUpload").files;
+    let role = document.getElementById("jobRole").value;
+
+    if (files.length === 0) { alert("Select resume"); return; }
+    if (!role) { alert("Select job role"); return; }
+
+    const table = document.getElementById("resumeTableBody");
+
+    for (let i = 0; i < files.length; i++) {
+
+        let formData = new FormData();
+
+        formData.append("resume", files[i]);
+        formData.append("job_role", role);
+        formData.append("job_description", document.getElementById("jobDescription").value);
+
+        // instant row (no delay feel)
+        let tempRow = document.createElement("tr");
+        tempRow.innerHTML = `
+            <td>⏳ Processing...</td>
+            <td colspan="5">${files[i].name}</td>
+        `;
+        table.appendChild(tempRow);
+
+        // DO NOT BLOCK UI
+        fetch("/upload", {
+            method: "POST",
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+
+            tempRow.remove(); // remove loading
+
+            let className = "";
+            if (data.status === "Selected") className = "selected";
+            else if (data.status === "Shortlisted") className = "shortlisted";
+            else className = "rejected";
+
+            table.insertAdjacentHTML("beforeend", `
+            <tr>
+                <td>${data.candidate_name}</td>
+                <td>${data.role}</td>
+                <td>${data.match_percentage}%</td>
+                <td>
+                    <div style="
+                        width:50px;height:50px;border-radius:50%;
+                        display:flex;align-items:center;justify-content:center;
+                        font-size:12px;font-weight:bold;color:#fff;
+                        background: conic-gradient(
+                        ${data.final_score >= 70 ? '#16a34a' : data.final_score >= 60 ? '#2563eb' : '#dc2626'} ${data.final_score * 3.6}deg,
+                        #e5e7eb ${data.final_score * 3.6}deg
+                    );">
+                        <span style="background:#111827;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                            ${data.final_score}%
+                        </span>
+                    </div>
+                </td>
+                <td><span class="status ${className}">${data.status}</span></td>
+                <td><a href="${data.file_url}" target="_blank"><button>View</button></a></td>
+            </tr>
+            `);
+
+            // update counters instantly
+            if (data.status === "Selected") selected++;
+            else if (data.status === "Shortlisted") shortlisted++;
+            else rejected++;
+
+            total++;
+
+            document.getElementById("total").innerText = total;
+            document.getElementById("selected").innerText = selected;
+            document.getElementById("shortlisted").innerText = shortlisted;
+            document.getElementById("rejected").innerText = rejected;
+            document.getElementById("resetBtn").style.display = "inline-block";
+
+        })
+        .catch(err => {
+            console.error(err);
+            tempRow.innerHTML = "❌ Error processing file";
+        });
+    }
+}
+/* RESET */
+
+/* RESET */
+function resetForm(){
+    document.getElementById("resumeTableBody").innerHTML = "";
+
+    total = selected = rejected = shortlisted = 0;
+
+    document.getElementById("total").innerText = 0;
+    document.getElementById("selected").innerText = 0;
+    document.getElementById("rejected").innerText = 0;
+    document.getElementById("shortlisted").innerText = 0;
+
+    document.getElementById("resetBtn").style.display = "none";
+}
+
+/* CLEAR */
+function clearForm(){
+    document.getElementById("jobRole").value="";
+    document.getElementById("jobDescription").value="";
+    document.getElementById("resumeUpload").value="";
+}
+async function loadCandidates() {
+
+    // ❌ prevents duplicate load after reset
+    if (isReset) {
+        isReset = false;
+        return;
+    }
+
+    let res = await fetch("/get_candidates");
+    let data = await res.json();
+
+    let table = document.getElementById("resumeTableBody");
+
+    // clear table FIRST
+    table.innerHTML = `
+    <tr>
+        <th>Name</th>
+        <th>Role</th>
+        <th>Match %</th>
+        <th>Score</th>
+        <th>Status</th>
+        <th>Resume</th>
+    </tr>`;
+
+    // reset counters
+    total = data.length;
+    selected = 0;
+    shortlisted = 0;
+    rejected = 0;
+
+    data.forEach(row => {
+
+        let className = "";
+        if (row.status === "Selected") {
+            className = "selected";
+            selected++;
+        }
+        else if (row.status === "Shortlisted") {
+            className = "shortlisted";
+            shortlisted++;
+        }
+        else {
+            className = "rejected";
+            rejected++;
+        }
+
+        table.innerHTML += `
+        <tr>
+            <td>${row.candidate_name}</td>
+            <td>${row.role}</td>
+            <td>${row.match_percentage}%</td>
+            <td>${row.final_score}%</td>
+            <td><span class="status ${className}">${row.status}</span></td>
+            <td><a href="${row.file_url}" target="_blank"><button>View</button></a></td>
+        </tr>
+        `;
+    });
+
+    // update UI counters
+    document.getElementById("total").innerText = total;
+    document.getElementById("selected").innerText = selected;
+    document.getElementById("shortlisted").innerText = shortlisted;
+    document.getElementById("rejected").innerText = rejected;
+   
+}
+
+
+/* CHATBOT */
+const chatbox = document.getElementById("chatbox");
+const chatbot = document.getElementById("chatbot");
+const chatInput = document.getElementById("chatInput");
+const tableEl = document.getElementById("resumeTableBody");
+let table = document.getElementById("resumeTableBody");
+
+// Toggle chatbox
+function toggleChat() {
+    chatbot.style.display = chatbot.style.display==="flex"?"none":"flex";
+}
+
+// Add message
+function addMessage(msg, sender="bot") {
+    const div=document.createElement("div");
+    div.classList.add("msg", sender);
+    div.style.display="flex"; div.style.marginBottom="10px";
+    div.innerHTML=`<div class="bubble" style="max-width:70%;padding:10px;border-radius:15px;font-size:14px;${sender==='user'?'background:#4e73df;color:white':'background:white;border:1px solid #ddd'}">${msg}</div>`;
+    chatbox.appendChild(div);
+    chatbox.scrollTop=chatbox.scrollHeight;
+}
+
+// Analyze candidate from chat
+function analyzeResume(name, role){
+    addMessage(`🔹 Analyzing ${name} for role ${role}...`, "bot");
+
+    setTimeout(()=>{
+        const match=Math.floor(Math.random()*31)+60;
+        const finalScore=Math.floor(Math.random()*31)+60;
+        const statuses=["Selected","Shortlisted","Rejected"];
+        const status=statuses[Math.floor(Math.random()*statuses.length)];
+        const className=status==="Selected"?"selected":status==="Shortlisted"?"shortlisted":"rejected";
+
+        tableEl.innerHTML+=`
+        <tr>
+            <td>${name}</td>
+            <td>${role}</td>
+            <td>${match}%</td>
+            <td>
+                <div style="width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;color:#fff;background: conic-gradient(${finalScore>=70?'#16a34a':finalScore>=60?'#2563eb':'#dc2626'} ${finalScore*3.6}deg,#e5e7eb ${finalScore*3.6}deg);">
+                    <span style="background:#111827;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;">${finalScore}%</span>
+                </div>
+            </td>
+            <td><span class="status ${className}">${status}</span></td>
+            <td><button disabled>View</button></td>
+        </tr>`;
+        tableEl.lastElementChild.scrollIntoView({behavior:"smooth"});
+        document.getElementById("resetBtn").style.display="inline-block";
+
+        if(status==="Selected") selected++;
+        else if(status==="Shortlisted") shortlisted++;
+        else rejected++;
+        total++;
+        document.getElementById("total").innerText=total;
+        document.getElementById("selected").innerText=selected;
+        document.getElementById("shortlisted").innerText=shortlisted;
+        document.getElementById("rejected").innerText=rejected;
+
+        addMessage(`✅ Analysis complete for ${name}: Match ${match}%, Final Score ${finalScore}%, Status: ${status}`, "bot");
+    },1200);
+}
+
+// Handle chat commands
+function sendMessage() {
+    const input = document.getElementById("chatInput");
+    const message = input.value.trim();
+
+    if (!message) return;
+
+    addMessage(message, "user");
+    input.value = "";
+
+    showTyping();
+
+    setTimeout(() => {
+        hideTyping();
+
+        let reply = "";
+
+        // 🎯 COMMAND: Selected Candidates
+        if (message.includes("selected")) {
+            let rows = tableEl.querySelectorAll("tr");
+            let selectedList = [];
+
+            rows.forEach(row => {
+                let status = row.querySelector(".status")?.innerText;
+                let name = row.children[0]?.innerText;
+
+                if (status === "Selected") {
+                    selectedList.push(name);
+                }
+            });
+
+            reply = selectedList.length === 0
+                ? "❌ No candidates selected yet."
+                : "✅ Selected Candidates:<br>👉 " + selectedList.join("<br>👉 ");
+        }
+
+        // 🎯 Stats
+        else if (message.includes("total")) {
+            reply = `📊 Total resumes processed: ${total}`;
+        }
+        else if (message.includes("rejected")) {
+            reply = `❌ Rejected candidates: ${rejected}`;
+        }
+        else if (message.includes("shortlisted")) {
+            reply = `📌 Shortlisted candidates: ${shortlisted}`;
+        }
+
+        // 🎯 Analyze command
+        else if (message.startsWith("analyze")) {
+            let parts = message.split(" ");
+
+            if (parts.length >= 3) {
+                let name = parts[1];
+                let role = parts.slice(2).join(" ");
+
+                reply = `🔍 Okay! I’m analyzing ${name} for ${role} role...`;
+                addMessage(reply, "bot");
+
+                analyzeResume(name, role);
+                return;
+            } else {
+                reply = "⚠️ Please use: analyze <name> <role>";
+            }
+        }
+
+        // 🎯 Greetings
+        else if (message.includes("hi") || message.includes("hello")) {
+            reply = "👋 Hello! I’m your Resume AI Assistant. எப்படி help பண்ணலாம்?";
+        }
+
+        // 🎯 Help
+        else if (message.includes("help")) {
+            reply = `
+            🤖 I can help you with:
+            <br>👉 Analyze resumes
+            <br>👉 Show selected candidates
+            <br>👉 Show stats (total, rejected, shortlisted)
+            <br>👉 Try: analyze abinaya full stack developer
+            `;
+        }
+
+        // 🎯 Resume related
+        else if (message.includes("resume")) {
+            reply = "📄 You can upload resumes and I’ll analyze them automatically!";
+        }
+
+        // 🎯 Role related
+        else if (message.includes("developer")) {
+            reply = "💻 Developers are evaluated based on skills, projects, and experience.";
+        }
+
+        // 🎯 Default Smart AI Reply
+        else {
+            const smartReplies = [
+                "🤔 Interesting... can you tell me more?",
+                "💡 I can help analyze resumes. Try typing 'help'",
+                "🚀 Want me to analyze a candidate? Type: analyze name role",
+                "📊 You can check stats like total, selected, rejected",
+                "😄 I'm learning! Ask me about resumes or candidates."
+            ];
+
+            reply = smartReplies[Math.floor(Math.random() * smartReplies.length)];
+        }
+
+        addMessage(reply, "bot");
+
+    }, 800);
+}
+// Enter key triggers send
+chatInput.addEventListener("keypress", e=>{if(e.key==="Enter") sendMessage();});
+
+</script>
+
+</body>
+</html>
