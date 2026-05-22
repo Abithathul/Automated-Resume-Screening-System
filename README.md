@@ -47,5 +47,5 @@ Integration with LinkedIn and job portals
 Improved accuracy using Deep Learning models
 
 
-**OUTPUT**
+
 
